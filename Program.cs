@@ -45,9 +45,9 @@ app.MapPut("/add", async (string targetId, int minutes) =>
 
 _ = new Timer(async _ =>
 {
-    foreach (BlockedUser blockedUser in blockedUsers)
+    foreach (BlockedUser blockedUser in blockedUsers.Where(u => DateTime.Now >= u.BlockedUntil))
     {
-        if (DateTime.Now >= blockedUser.BlockedUntil && await UnblockUser(blockedUser.Id))
+        if (await UnblockUser(blockedUser.Id))
         {
             await Console.Out.WriteLineAsync($"Unblocked {blockedUser.Id}");
             _ = dbUsers.DeleteMany(x => x.Id == blockedUser.Id);
