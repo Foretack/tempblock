@@ -36,7 +36,7 @@ app.MapPut("/add", async (string targetId, int hours) =>
         };
         _ = dbUsers.Insert(target);
         blockedUsers.Add(target);
-        Console.WriteLine($"Blocked {targetId} for {hours}m");
+        Console.WriteLine($"Blocked {targetId} for {hours}h");
         return Results.Ok();
     }
 
