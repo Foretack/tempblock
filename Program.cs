@@ -51,6 +51,7 @@ _ = new Timer(async _ =>
         {
             await Console.Out.WriteLineAsync($"Unblocked {blockedUser.Id}");
             _ = dbUsers.DeleteMany(x => x.Id == blockedUser.Id);
+            _ = blockedUsers.Remove(blockedUser);
         }
 
         dbUsers = db.GetCollection<BlockedUser>("blocked_users");
