@@ -19,9 +19,9 @@ List<BlockedUser> blockedUsers = new();
 foreach (BlockedUser user in dbUsers.FindAll())
     blockedUsers.Add(user);
 
-app.MapPut("/add", async (string targetId, int minutes) =>
+app.MapPut("/add", async (string targetId, int hours) =>
 {
-    if (targetId is null || minutes == 0)
+    if (targetId is null || hours == 0)
         return Results.BadRequest();
     if (blockedUsers.Any(x => x.Id == targetId))
         return Results.Conflict();
@@ -32,11 +32,11 @@ app.MapPut("/add", async (string targetId, int minutes) =>
         BlockedUser target = new()
         {
             Id = targetId,
-            BlockedUntil = DateTime.Now.AddMinutes(minutes)
+            BlockedUntil = DateTime.Now.AddHours(hours)
         };
         _ = dbUsers.Insert(target);
         blockedUsers.Add(target);
-        Console.WriteLine($"Blocked {targetId} for {minutes}m");
+        Console.WriteLine($"Blocked {targetId} for {hours}m");
         return Results.Ok();
     }
 
