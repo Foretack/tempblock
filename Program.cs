@@ -24,7 +24,7 @@ app.MapPut("/add", async (string targetId, int minutes) =>
     if (targetId is null || minutes == 0)
         return Results.BadRequest();
     if (blockedUsers.Any(x => x.Id == targetId))
-        return Results.StatusCode(302);
+        return Results.Conflict();
 
     HttpStatusCode code = await BlockUser(targetId);
     if (code == HttpStatusCode.NoContent)
@@ -45,7 +45,9 @@ app.MapPut("/add", async (string targetId, int minutes) =>
 
 _ = new Timer(async _ =>
 {
-    foreach (BlockedUser blockedUser in blockedUsers.Where(u => DateTime.Now >= u.BlockedUntil))
+    foreach (BlockedUser blockedUser in blockedUsers
+    .Where(u => DateTime.Now >= u.BlockedUntil)
+    .ToArray())
     {
         if (await UnblockUser(blockedUser.Id))
         {
