@@ -43,20 +43,36 @@ app.MapPut("/add", async (string targetId, int hours) =>
     return Results.StatusCode((int)code);
 });
 
+int t = 0;
 _ = new Timer(async _ =>
 {
-    foreach (BlockedUser blockedUser in blockedUsers
+    try
+    {
+        foreach (BlockedUser blockedUser in blockedUsers
     .Where(u => DateTime.Now >= u.BlockedUntil)
     .ToArray())
-    {
-        if (await UnblockUser(blockedUser.Id))
         {
-            await Console.Out.WriteLineAsync($"Unblocked {blockedUser.Id}");
-            _ = dbUsers.DeleteMany(x => x.Id == blockedUser.Id);
-            _ = blockedUsers.Remove(blockedUser);
-        }
+            if (await UnblockUser(blockedUser.Id))
+            {
+                await Console.Out.WriteLineAsync($"Unblocked {blockedUser.Id}");
+                _ = dbUsers.DeleteMany(x => x.Id == blockedUser.Id);
+                _ = blockedUsers.Remove(blockedUser);
+            }
 
-        dbUsers = db.GetCollection<BlockedUser>("blocked_users");
+            dbUsers = db.GetCollection<BlockedUser>("blocked_users");
+        }
+    }
+    catch (Exception ex)
+    {
+        await Console.Out.WriteLineAsync(ex.Message);
+    }
+    finally
+    {
+        t++;
+        if (t % 60 == 0 || t == 1)
+        {
+            Console.WriteLine($"uptime: {t / 60}h");
+        }
     }
 }, null, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(1));
 
