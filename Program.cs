@@ -44,7 +44,29 @@ app.MapPut("/add", async (string targetId, int hours) =>
 });
 
 int t = 0;
-Timer timer = new(async _ =>
+var timer = new System.Timers.Timer()
+{
+    AutoReset = true,
+    Enabled = true,
+    Interval = TimeSpan.FromMinutes(5).TotalMilliseconds
+};
+timer.Elapsed += async (_, _) => await Tick();
+
+app.Run("http://localhost:1340");
+
+async Task<HttpStatusCode> BlockUser(string targetId)
+{
+    HttpResponseMessage response = await client.PutAsync($"{baseAddress}/users/blocks?target_user_id={targetId}", null);
+    return response.StatusCode;
+}
+
+async Task<bool> UnblockUser(string targetId)
+{
+    HttpResponseMessage response = await client.DeleteAsync($"{baseAddress}/users/blocks?target_user_id={targetId}");
+    return response.IsSuccessStatusCode;
+}
+
+async Task Tick()
 {
     try
     {
@@ -69,27 +91,11 @@ Timer timer = new(async _ =>
     finally
     {
         t++;
-        if (t % 60 == 0 || t == 1)
+        if (t % 12 == 0 || t == 1)
         {
-            Console.WriteLine($"uptime: {t / 60}h");
+            Console.WriteLine($"uptime: {t / 12}h");
         }
     }
-}, null, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(1));
-
-GC.KeepAlive(timer);
-
-app.Run("http://localhost:1340");
-
-async Task<HttpStatusCode> BlockUser(string targetId)
-{
-    HttpResponseMessage response = await client.PutAsync($"{baseAddress}/users/blocks?target_user_id={targetId}", null);
-    return response.StatusCode;
-}
-
-async Task<bool> UnblockUser(string targetId)
-{
-    HttpResponseMessage response = await client.DeleteAsync($"{baseAddress}/users/blocks?target_user_id={targetId}");
-    return response.IsSuccessStatusCode;
 }
 
 internal class BlockedUser
