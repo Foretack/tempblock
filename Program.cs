@@ -44,13 +44,13 @@ app.MapPut("/add", async (string targetId, int hours) =>
 });
 
 int t = 0;
-_ = new Timer(async _ =>
+Timer timer = new(async _ =>
 {
     try
     {
         foreach (BlockedUser blockedUser in blockedUsers
-    .Where(u => DateTime.Now >= u.BlockedUntil)
-    .ToArray())
+        .Where(u => DateTime.Now >= u.BlockedUntil)
+        .ToArray())
         {
             if (await UnblockUser(blockedUser.Id))
             {
@@ -75,6 +75,8 @@ _ = new Timer(async _ =>
         }
     }
 }, null, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(1));
+
+GC.KeepAlive(timer);
 
 app.Run("http://localhost:1340");
 
